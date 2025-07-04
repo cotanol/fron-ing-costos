@@ -104,8 +104,11 @@ export function CreateBenefitDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="mb-4">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
+        >
+          <Plus size={16} />
           Añadir Beneficio
         </Button>
       </DialogTrigger>

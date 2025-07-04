@@ -385,126 +385,127 @@ export function AnalysisClient({
         {/* Costs and Benefits Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Costs Table */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold">Costos del Proyecto</h2>
+
+          <Card className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-custom-silver/30">
+            <CardHeader className="flex justify-between items-center mb-4">
+              <CardTitle className="text-xl font-bold text-custom-purple">
+                Costos del Proyecto
+              </CardTitle>
               <CreateCostDialog
                 onCrearCosto={handleCrearCosto}
                 horizonteAnalisis={project.horizonteAnalisis}
                 proyectoId={projectId}
               />
-            </div>
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead className="w-12"></TableHead>
+            </CardHeader>
+
+            <CardContent className="">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {project.costos?.map((cost) => (
+                    <TableRow key={cost.id}>
+                      <TableCell>{cost.nombre}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            cost.tipo === "FIJO" ? "secondary" : "outline"
+                          }
+                        >
+                          {cost.tipo}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(
+                          cost.valoresAnuales.reduce(
+                            (sum, value) => sum + value,
+                            0
+                          )
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEliminarCosto(cost.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {project.costos?.map((cost) => (
-                      <TableRow key={cost.id}>
-                        <TableCell>{cost.nombre}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              cost.tipo === "FIJO" ? "secondary" : "outline"
-                            }
-                          >
-                            {cost.tipo}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(
-                            cost.valoresAnuales.reduce(
-                              (sum, value) => sum + value,
-                              0
-                            )
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEliminarCosto(cost.id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
 
           {/* Benefits Table */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold">
+
+          <Card className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-custom-silver/30">
+            <CardHeader className="flex justify-between items-center mb-4">
+              <CardTitle className="text-xl font-bold text-custom-purple">
                 Beneficios del Proyecto
-              </h2>
+              </CardTitle>
               <CreateBenefitDialog
                 onCrearBeneficio={handleCrearBeneficio}
                 horizonteAnalisis={project.horizonteAnalisis}
                 proyectoId={projectId}
               />
-            </div>
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead className="w-12"></TableHead>
+            </CardHeader>
+            <CardContent className="">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {project.beneficios?.map((benefit) => (
+                    <TableRow key={benefit.id}>
+                      <TableCell>{benefit.nombre}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            benefit.tipo === "TANGIBLE"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {benefit.tipo}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(
+                          benefit.valoresAnuales.reduce(
+                            (sum, value) => sum + value,
+                            0
+                          )
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEliminarBeneficio(benefit.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {project.beneficios?.map((benefit) => (
-                      <TableRow key={benefit.id}>
-                        <TableCell>{benefit.nombre}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              benefit.tipo === "TANGIBLE"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {benefit.tipo}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(
-                            benefit.valoresAnuales.reduce(
-                              (sum, value) => sum + value,
-                              0
-                            )
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEliminarBeneficio(benefit.id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
