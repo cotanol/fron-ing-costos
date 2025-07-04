@@ -104,6 +104,7 @@
   --gradient-warm: linear-gradient(135deg, #db8a74 0%, #fac9b8 100%);
 }
 
+/* Dark mode styles */
 .dark {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
