@@ -102,7 +102,7 @@ export function CreateCostDialog({
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors hover:cursor-pointer"
         >
           <Plus size={16} />
           Añadir Costo
@@ -110,14 +110,18 @@ export function CreateCostDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Añadir Nuevo Costo</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl font-bold text-custom-purple">
+            Añadir Nuevo Costo
+          </DialogTitle>
+          <DialogDescription className="text-custom-violet">
             Complete los detalles del costo y sus valores anuales.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="nombre">Nombre del Costo</Label>
+            <Label className="text-custom-purple" htmlFor="nombre">
+              Nombre del Costo
+            </Label>
             <Input
               id="nombre"
               placeholder="Ej: Inversión inicial en equipos"
@@ -129,7 +133,9 @@ export function CreateCostDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción</Label>
+            <Label className="text-custom-purple" htmlFor="descripcion">
+              Descripción
+            </Label>
             <Textarea
               id="descripcion"
               placeholder="Describe el concepto del costo..."
@@ -144,7 +150,9 @@ export function CreateCostDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tipo">Tipo de Costo</Label>
+            <Label className="text-custom-purple" htmlFor="tipo">
+              Tipo de Costo
+            </Label>
             <Select
               onValueChange={(value) =>
                 setValue("tipo", value as "FIJO" | "VARIABLE")
@@ -164,11 +172,14 @@ export function CreateCostDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Valores Anuales</Label>
+            <Label className="text-custom-purple">Valores Anuales</Label>
             <div className="grid grid-cols-2 gap-3">
               {fields.map((field, index) => (
                 <div key={field.id} className="space-y-1">
-                  <Label htmlFor={`year-${index}`} className="text-sm">
+                  <Label
+                    className="text-custom-purple text-sm"
+                    htmlFor={`year-${index}`}
+                  >
                     Año {index}
                   </Label>
                   <Input
@@ -195,10 +206,14 @@ export function CreateCostDialog({
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              className="flex-1 px-6 py-3 border border-custom-silver/30 text-custom-violet rounded-xl hover:bg-custom-silver/20 transition-all hover:cursor-pointer"
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              className="flex-1 px-6 py-3 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105  bg-gradient-secondary hover:cursor-pointer"
+            >
               Añadir Costo
             </Button>
           </DialogFooter>

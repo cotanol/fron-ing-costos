@@ -40,7 +40,7 @@ export default function Home() {
   };
 
   return (
-    <div className="">
+    <div className="min-h-screen">
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-8">
           <div>

@@ -33,7 +33,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            className="text-red-500 hover:text-red-700 hover:bg-red-50  hover:cursor-pointer"
             onClick={() => onDelete(project.id)}
           >
             <Trash2 className="w-4 h-4" />
@@ -54,7 +54,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
       </CardContent>
       <CardFooter>
         <Link href={`/analysis/${project.id}`} className="w-full flex">
-          <Button className=" bg-gradient-primary flex-1 py-6 font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+          <Button className=" bg-gradient-primary flex-1 py-6 font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105 hover:cursor-pointer">
             Ver Análisis
           </Button>
         </Link>

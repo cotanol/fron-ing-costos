@@ -158,28 +158,43 @@ export function AnalysisClient({
     <div>
       <div className="container mx-auto py-8 px-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                {project.nombre}
-              </h1>
-              <p className="text-muted-foreground">{project.descripcion}</p>
-              <div className="flex gap-2 mt-2">
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
+        <div className="mb-8">
+          {/* 1. Enlace "Volver" - Ahora está fuera y encima del resto */}
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm"
+          >
+            <ArrowLeft size={16} />
+            Volver al Dashboard
+          </Link>
+
+          {/* 2. Contenido Principal del Encabezado */}
+          <div>
+            <h1 className="text-4xl font-bold text-custom-purple mb-2">
+              {project.nombre}
+            </h1>
+            <p className="text-lg text-custom-violet mb-4">
+              {project.descripcion}
+            </p>
+            <div className="flex items-center gap-4">
+              <Badge
+                variant="outline"
+                className="flex items-center gap-2 py-1 px-3"
+              >
+                <Calendar className="w-4 h-4" />
+                <span className="text-sm">
                   {project.horizonteAnalisis} años
-                </Badge>
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Percent className="w-3 h-3" />
-                  {project.tasaDescuento}% descuento
-                </Badge>
-              </div>
+                </span>
+              </Badge>
+              <Badge
+                variant="outline"
+                className="flex items-center gap-2 py-1 px-3"
+              >
+                <Percent className="w-4 h-4" />
+                <span className="text-sm">
+                  {project.tasaDescuento} descuento
+                </span>
+              </Badge>
             </div>
           </div>
         </div>
@@ -434,6 +449,7 @@ export function AnalysisClient({
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEliminarCosto(cost.id)}
+                          className=" hover:cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
@@ -496,6 +512,7 @@ export function AnalysisClient({
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEliminarBeneficio(benefit.id)}
+                          className=" hover:cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>

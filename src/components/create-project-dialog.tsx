@@ -67,22 +67,29 @@ export function CreateProjectDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-primary text-white px-6 py-3 rounded-xl font-semibold  transition-all duration-200 shadow-md hover:shadow-xl flex items-center gap-2 hover:scale-105 transform">
+        <Button className="bg-gradient-primary text-white px-6 py-3 rounded-xl font-semibold  transition-all duration-200 shadow-md hover:shadow-xl flex items-center gap-2 hover:scale-105 transform hover:cursor-pointer">
           <Plus className="w-4 h-4 mr-2" />
           Crear Nuevo Proyecto
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Proyecto</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl font-bold text-custom-purple">
+            Crear Nuevo Proyecto
+          </DialogTitle>
+          <DialogDescription className="text-custom-violet">
             Complete los detalles del proyecto para iniciar el análisis de
             costo-beneficio.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="nombre">Nombre del Proyecto</Label>
+            <Label
+              className="block text-sm font-medium text-custom-purple mb-2"
+              htmlFor="nombre"
+            >
+              Nombre del Proyecto
+            </Label>
             <Input
               id="nombre"
               placeholder="Ej: Sistema de Automatización"
@@ -94,7 +101,12 @@ export function CreateProjectDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción</Label>
+            <Label
+              className="block text-sm font-medium text-custom-purple mb-2"
+              htmlFor="descripcion"
+            >
+              Descripción
+            </Label>
             <Textarea
               id="descripcion"
               placeholder="Describe brevemente el objetivo y alcance del proyecto..."
@@ -110,7 +122,10 @@ export function CreateProjectDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="horizonteAnalisis">
+              <Label
+                className="block text-sm font-medium text-custom-purple mb-2"
+                htmlFor="horizonteAnalisis"
+              >
                 Horizonte de Análisis (años)
               </Label>
               <Input
@@ -128,7 +143,12 @@ export function CreateProjectDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tasaDescuento">Tasa de Descuento (%)</Label>
+              <Label
+                className="block text-sm font-medium text-custom-purple mb-2"
+                htmlFor="tasaDescuento"
+              >
+                Tasa de Descuento (%)
+              </Label>
               <Input
                 id="tasaDescuento"
                 type="number"
@@ -145,15 +165,19 @@ export function CreateProjectDialog({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              className="flex-1 px-6 py-3 border border-custom-silver/30 text-custom-violet rounded-xl hover:bg-custom-silver/20 transition-all hover:cursor-pointer"
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              className="flex-1 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105 hover:cursor-pointer"
+            >
               Crear Proyecto
             </Button>
           </DialogFooter>
