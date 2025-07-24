@@ -1,7 +1,19 @@
+"use client";
+
 import React from "react";
 import { BarChart3, User, Settings, Bell } from "lucide-react";
+import { useAuth } from "@/context/AuthProvider";
+import { useRouter } from "next/navigation";
 
 const Header: React.FC = () => {
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-custom-silver/30 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -52,7 +64,10 @@ const Header: React.FC = () => {
             <button className="p-2 text-custom-violet hover:text-custom-purple hover:bg-custom-dogwood/30 rounded-lg transition-all">
               <Bell size={20} />
             </button>
-            <button className="p-2 text-custom-violet hover:text-custom-purple hover:bg-custom-dogwood/30 rounded-lg transition-all">
+            <button
+              onClick={handleLogout}
+              className="p-2 text-custom-violet hover:text-custom-purple hover:bg-custom-dogwood/30 rounded-lg transition-all"
+            >
               <Settings size={20} />
             </button>
             <div className="flex items-center gap-2 bg-custom-dogwood/30 px-3 py-2 rounded-xl">

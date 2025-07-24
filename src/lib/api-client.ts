@@ -1,44 +1,98 @@
 import {
   Proyecto,
-  Costo,
-  Beneficio,
-  Analisis,
-  CrearCostoDto,
-  CrearBeneficioDto,
+  FlujoFinanciero,
+  CategoriaFlujo,
+  ItemFlujoBase,
   CrearProyectoDto,
+  CrearFlujoFinancieroDto,
+  Analisis,
 } from "./types";
+
+interface User {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  isActive: boolean;
+  email: string;
+  roles: string[];
+}
+
+interface AuthResponse {
+  user: User;
+  token: string;
+}
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // HELPERS
 
-async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    const error = new Error("An error occurred while fetching the data.");
-    // Attach more info to the error object
-    (error as any).info = await response.json();
-    (error as any).status = response.status;
-    throw error;
-  }
-  return response.json();
-}
+// NUEVO: Función centralizada para manejar la autenticación y los errores con fetch
+async function customFetch(url: string, options?: RequestInit) {
+  // 1. Obtener el token del localStorage
+  const token = localStorage.getItem("token");
 
-const handleDelete = async (url: string, entityName: string) => {
-  const response = await fetch(url, { method: "DELETE" });
+  // 2. Preparar los headers
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json", // Header por defecto
+    ...(options?.headers as Record<string, string>), // Headers que vengan de la llamada original
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`; // 3. Añadir el token si existe
+  }
+
+  // 4. Realizar la petición con los headers actualizados
+  const response = await fetch(url, { ...options, headers });
+
+  // 5. Manejar errores, especialmente el 401
   if (!response.ok) {
-    const error = new Error(
-      `An error occurred while deleting the ${entityName}.`
-    );
+    // Si el token expiró o es inválido, el backend devolverá 401
+    if (response.status === 401) {
+      localStorage.removeItem("token"); // Limpiar el token viejo
+      window.location.href = "/login"; // Redirigir al login
+    }
+
+    const error = new Error("An error occurred while fetching the data.");
     try {
       (error as any).info = await response.json();
     } catch (e) {
-      (error as any).info = { message: await response.text() };
+      (error as any).info = { message: "Error reading response body." };
     }
     (error as any).status = response.status;
     throw error;
   }
+
+  return response;
+}
+
+// MODIFICADO: Tu fetcher ahora usa customFetch
+async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await customFetch(url, options);
+  // Si la petición es DELETE, puede que no haya un cuerpo JSON
+  if (response.status === 204) {
+    return null as T;
+  }
+  return response.json();
+}
+
+// MODIFICADO: Tu handleDelete ahora usa customFetch
+const handleDelete = async (url: string, entityName: string) => {
+  // Ya no necesitamos la lógica de fetch aquí, customFetch se encarga
+  await customFetch(url, { method: "DELETE" });
 };
+
+// --- AUTHENTICATION ---
+export const checkAuthStatus = (): Promise<AuthResponse> =>
+  fetcher(`${API_URL}/auth/check-status`);
+
+export const loginUser = (
+  email: string,
+  password: string
+): Promise<AuthResponse> =>
+  fetcher(`${API_URL}/auth/login`, {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
 
 // --- PROYECTOS ---
 export const getProyectos = (): Promise<Proyecto[]> =>
@@ -69,56 +123,46 @@ export const eliminarProyecto = (id: string): Promise<void> =>
 
 // --- COSTOS ---
 
-export const getCostos = (): Promise<Costo[]> => fetcher(`${API_URL}/costos`);
+export const getFlujosFinancieros = (): Promise<FlujoFinanciero[]> =>
+  fetcher(`${API_URL}/flujos-financieros`);
 
-export const getCostoPorId = (id: string): Promise<Costo> =>
-  fetcher(`${API_URL}/costos/${id}`);
+export const getFlujoFinancieroPorId = (id: string): Promise<FlujoFinanciero> =>
+  fetcher(`${API_URL}/flujos-financieros/${id}`);
 
-export const crearCosto = (costo: CrearCostoDto): Promise<Costo> =>
-  fetcher(`${API_URL}/costos`, {
+export const crearFlujoFinanciero = (
+  flujo: CrearFlujoFinancieroDto
+): Promise<FlujoFinanciero> =>
+  fetcher(`${API_URL}/flujos-financieros`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(costo),
+    body: JSON.stringify(flujo),
   });
-export const modificarCosto = (
+export const modificarFlujoFinanciero = (
   id: string,
-  costo: Partial<CrearCostoDto>
-): Promise<Costo> =>
-  fetcher(`${API_URL}/costos/${id}`, {
+  flujo: Partial<CrearFlujoFinancieroDto>
+): Promise<FlujoFinanciero> =>
+  fetcher(`${API_URL}/flujos-financieros/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(costo),
+    body: JSON.stringify(flujo),
   });
-export const eliminarCosto = (id: string): Promise<void> =>
-  handleDelete(`${API_URL}/costos/${id}`, "costo");
+export const eliminarFlujoFinanciero = (id: string): Promise<void> =>
+  handleDelete(`${API_URL}/flujos-financieros/${id}`, "flujo financiero");
 
-// --- BENEFICIOS ---
+// --- BIBLIOTECA DE COSTOS ---
 
-export const getBeneficios = (): Promise<Beneficio[]> =>
-  fetcher(`${API_URL}/beneficios`);
+export const getCategoriasFlujo = (): Promise<CategoriaFlujo[]> =>
+  fetcher(`${API_URL}/categorias-flujo`);
 
-export const getBeneficioPorId = (id: string): Promise<Beneficio> =>
-  fetcher(`${API_URL}/beneficios/${id}`);
-
-export const crearBeneficio = (
-  beneficio: CrearBeneficioDto
-): Promise<Beneficio> =>
-  fetcher(`${API_URL}/beneficios`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(beneficio),
-  });
-export const modificarBeneficio = (
-  id: string,
-  beneficio: Partial<Beneficio>
-): Promise<Beneficio> =>
-  fetcher(`${API_URL}/beneficios/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(beneficio),
-  });
-export const eliminarBeneficio = (id: string): Promise<void> =>
-  handleDelete(`${API_URL}/beneficios/${id}`, "beneficio");
+export const getItemsFlujoBase = (
+  categoriaId?: string
+): Promise<ItemFlujoBase[]> => {
+  const url = new URL(`${API_URL}/items-flujo-base`);
+  if (categoriaId) {
+    url.searchParams.append("categoriaId", categoriaId);
+  }
+  return fetcher(url.toString());
+};
 
 // --- ANALISIS ---
 export const getAnalisis = async (projectId: string): Promise<Analisis> => {

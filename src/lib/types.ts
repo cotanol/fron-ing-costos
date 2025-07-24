@@ -1,4 +1,11 @@
-// Solicitudes GET
+export interface User {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  isActive: boolean;
+  email: string;
+  roles: string[];
+}
 
 export interface Proyecto {
   id: string;
@@ -6,26 +13,40 @@ export interface Proyecto {
   descripcion: string;
   horizonteAnalisis: number; // años
   tasaDescuento: number; // porcentaje
-  costos?: Costo[];
-  beneficios?: Beneficio[];
+  flujos?: FlujoFinanciero[];
+  user: User;
 }
 
-export interface Costo {
+export interface FlujoFinanciero {
   id: string;
   nombre: string;
   descripcion: string;
-  tipo: "FIJO" | "VARIABLE";
+  tipoFlujo: "INGRESO" | "EGRESO";
+  tipo: "DIRECTO" | "INDIRECTO";
+  comportamiento: "FIJO" | "VARIABLE";
+  naturaleza: "TANGIBLE" | "INTANGIBLE";
   valoresAnuales: number[];
   proyecto: Proyecto;
 }
 
-export interface Beneficio {
+export interface CategoriaFlujo {
   id: string;
   nombre: string;
   descripcion: string;
-  tipo: "TANGIBLE" | "INTANGIBLE";
-  valoresAnuales: number[];
-  proyecto: Proyecto;
+  itemsFlujoBase?: ItemFlujoBase[];
+}
+
+export interface ItemFlujoBase {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  montoSugerido: number;
+  tipo: "Directo" | "Indirecto";
+  frecuencia: "UNICO" | "ANUAL" | "MENSUAL";
+  naturaleza: "TANGIBLE" | "INTANGIBLE";
+  tipoFlujo: "INGRESO" | "EGRESO";
+  comportamiento: "FIJO" | "VARIABLE";
+  categoria: CategoriaFlujo;
 }
 
 export interface Analisis {
@@ -38,20 +59,34 @@ export interface Analisis {
 
 // --- DTOs para API requests ---
 
-export type CrearProyectoDto = Omit<Proyecto, "id" | "costos" | "beneficios">;
+export type CrearProyectoDto = Omit<Proyecto, "id" | "flujos" | "user">;
 
-export interface CrearCostoDto {
-  nombre: string;
+export interface CrearFlujoFinancieroDto {
+  proyectoId: string;
   descripcion: string;
-  tipo: "FIJO" | "VARIABLE";
+  itemFlujoBaseId: string;
+  categoriaId: string;
+  nombre: string;
+  tipoFlujo: "INGRESO" | "EGRESO";
+  comportamiento: "FIJO" | "VARIABLE";
+  tipo: "DIRECTO" | "INDIRECTO";
+  naturaleza: "TANGIBLE" | "INTANGIBLE";
   valoresAnuales: number[];
-  proyectoId?: string; // id del proyecto al que pertenece
 }
 
-export interface CrearBeneficioDto {
+export type CrearCategoriaFlujoDto = Omit<
+  CategoriaFlujo,
+  "id" | "itemsFlujoBase"
+>;
+
+export interface CrearItemFlujoBaseDto {
   nombre: string;
   descripcion: string;
-  tipo: "TANGIBLE" | "INTANGIBLE";
-  valoresAnuales: number[];
-  proyectoId?: string; // id del proyecto al que pertenece
+  tipoFlujo: "INGRESO" | "EGRESO";
+  tipo: "DIRECTO" | "INDIRECTO";
+  naturaleza: "TANGIBLE" | "INTANGIBLE";
+  comportamiento: "FIJO" | "VARIABLE";
+  frecuencia: "UNICO" | "ANUAL" | "MENSUAL";
+  montoSugerido: number;
+  categoriaId: string;
 }
