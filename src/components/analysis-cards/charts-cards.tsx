@@ -1,10 +1,14 @@
+import { useMemo } from "react";
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -34,18 +38,79 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
     }).format(value);
   };
 
-  // Prepare chart data once analysis is available
-  const chartData = analysis
-    ? Array.from({ length: project.horizonteAnalisis }, (_, index) => ({
-        year: `Año ${index}`,
-        flujoNeto: analysis.flujosCajaNetos[index],
-        flujoAcumulado: analysis.flujosCajaAcumulados[index],
-      }))
-    : [];
+  const chartData = useMemo(
+    () =>
+      analysis
+        ? Array.from({ length: project.horizonteAnalisis }, (_, index) => ({
+            year: `Año ${index}`,
+            flujoNeto: analysis.flujosCajaNetos[index],
+            flujoAcumulado: analysis.flujosCajaAcumulados[index],
+          }))
+        : [],
+    [analysis, project.horizonteAnalisis]
+  );
 
-  if (analysis) {
-    console.log("DATOS FINALES PARA LOS GRÁFICOS:", chartData);
-  }
+  const COLORS = {
+    DIRECTO: "#8884d8",
+    INDIRECTO: "#82ca9d",
+    TANGIBLE: "#ffc658",
+    INTANGIBLE: "#ff8042",
+    FIJO: "#0088FE",
+    VARIABLE: "#00C49F",
+    // Nuevos colores para gradientes y barras
+    POSITIVE_START: "#fac9b8",
+    POSITIVE_END: "#db8a74",
+    NEGATIVE_START: "#444054",
+    NEGATIVE_END: "#2f243a",
+  };
+
+  const flujoData = useMemo(() => {
+    if (!project.flujos) return [];
+    return project.flujos.map((flujo) => ({
+      ...flujo,
+      total: flujo.valoresAnuales.reduce((acc, val) => acc + val, 0),
+    }));
+  }, [project.flujos]);
+
+  const dataByType = useMemo(() => {
+    return Object.entries(
+      flujoData.reduce((acc, flujo) => {
+        const key = flujo.tipo;
+        if (!acc[key]) {
+          acc[key] = 0;
+        }
+        acc[key] += flujo.total;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([name, value]) => ({ name, value }));
+  }, [flujoData]);
+
+  const dataByNature = useMemo(() => {
+    return Object.entries(
+      flujoData.reduce((acc, flujo) => {
+        const key = flujo.naturaleza;
+        if (!acc[key]) {
+          acc[key] = 0;
+        }
+        acc[key] += flujo.total;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([name, value]) => ({ name, value }));
+  }, [flujoData]);
+
+  const dataByBehavior = useMemo(() => {
+    return Object.entries(
+      flujoData.reduce((acc, flujo) => {
+        const key = flujo.comportamiento;
+        if (!acc[key]) {
+          acc[key] = 0;
+        }
+        acc[key] += flujo.total;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([name, value]) => ({ name, value }));
+  }, [flujoData]);
+
   return (
     <>
       <Card className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-custom-silver/30">
@@ -56,33 +121,14 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
-              {/* 1. Definimos AMBOS gradientes*/}
               <defs>
-                {/* Gradiente para valores positivos (Dogwood a Salmon) */}
-                <linearGradient
-                  id="positiveGradient"
-                  x1="0"
-                  y1="0"
-                  x2="1"
-                  y2="1"
-                >
-                  <stop offset="0%" stopColor="#fac9b8" />{" "}
-                  {/* custom-dogwood */}
-                  <stop offset="100%" stopColor="#db8a74" />{" "}
-                  {/* custom-salmon */}
+                <linearGradient id="positiveGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor={COLORS.POSITIVE_START} />
+                  <stop offset="100%" stopColor={COLORS.POSITIVE_END} />
                 </linearGradient>
-
-                {/* Gradiente para valores negativos (Violet a Purple) */}
-                <linearGradient
-                  id="negativeGradient"
-                  x1="0"
-                  y1="0"
-                  x2="1"
-                  y2="1"
-                >
-                  <stop offset="0%" stopColor="#444054" /> {/* custom-violet */}
-                  <stop offset="100%" stopColor="#2f243a" />{" "}
-                  {/* custom-purple */}
+                <linearGradient id="negativeGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor={COLORS.NEGATIVE_START} />
+                  <stop offset="100%" stopColor={COLORS.NEGATIVE_END} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
@@ -94,12 +140,10 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
                   "Flujo Neto",
                 ]}
               />
-              {/* 2. Usa el componente <Bar> con <Cell> para aplicar la lógica */}
               <Bar dataKey="flujoNeto">
                 {chartData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    // 3. Aquí está la lógica condicional para el 'fill'
                     fill={
                       entry.flujoNeto >= 0
                         ? "url(#positiveGradient)"
@@ -124,15 +168,9 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <defs>
-                <linearGradient
-                  id="lineGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
-                  <stop offset="0%" stopColor="#444054" />
-                  <stop offset="100%" stopColor="#DB8A74" />
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={COLORS.NEGATIVE_START} />
+                  <stop offset="100%" stopColor={COLORS.POSITIVE_END} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
@@ -151,6 +189,94 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
                 strokeWidth={2}
               />
             </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Gráfico de Anillo para TIPO */}
+      <Card className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-custom-silver/30">
+        <CardHeader>
+          <CardTitle>Distribución por Tipo</CardTitle>
+          <CardDescription>Total de flujos directos vs. indirectos</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={dataByType}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                fill="#8884d8"
+                paddingAngle={5}
+                dataKey="value"
+                nameKey="name"
+              >
+                {dataByType.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[entry.name as keyof typeof COLORS]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Gráfico de Barras Verticales para NATURALEZA */}
+      <Card className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-custom-silver/30">
+        <CardHeader>
+          <CardTitle>Distribución por Naturaleza</CardTitle>
+          <CardDescription>Total de flujos tangibles vs. intangibles</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={dataByNature}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis tickFormatter={(value) => formatCurrency(value)} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Legend />
+              <Bar dataKey="value">
+                {dataByNature.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[entry.name as keyof typeof COLORS]}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Gráfico de Barras Horizontales para COMPORTAMIENTO */}
+      <Card className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-custom-silver/30">
+        <CardHeader>
+          <CardTitle>Distribución por Comportamiento</CardTitle>
+          <CardDescription>Total de flujos fijos vs. variables</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart layout="vertical" data={dataByBehavior}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} />
+              <YAxis type="category" dataKey="name" width={80} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Legend />
+              <Bar dataKey="value">
+                {dataByBehavior.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[entry.name as keyof typeof COLORS]}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

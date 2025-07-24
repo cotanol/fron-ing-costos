@@ -45,6 +45,7 @@ const createFlowSchema = z.object({
       value: z.number(),
     })
   ),
+  categoriaId: z.string().min(1, "La categoría es requerida"),
 });
 
 type FlowFormData = z.infer<typeof createFlowSchema>;
@@ -71,7 +72,6 @@ export function CreateFlowDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState<{
     itemId: string;
-    categoriaId: string;
   } | null>(null);
 
   const form = useForm<FlowFormData>({
@@ -136,7 +136,7 @@ export function CreateFlowDialog({
       newValoresAnuales[0] = { value: item.montoSugerido };
     }
 
-    setSelectedItemInfo({ itemId: item.id, categoriaId: selectedCategoria });
+    setSelectedItemInfo({ itemId: item.id });
 
     reset({
       nombre: item.nombre,
@@ -146,6 +146,7 @@ export function CreateFlowDialog({
       tipo: item.tipo,
       naturaleza: item.naturaleza,
       valoresAnuales: newValoresAnuales,
+      categoriaId: selectedCategoria,
     });
     setViewMode("personalizado");
   };
@@ -157,7 +158,7 @@ export function CreateFlowDialog({
       valoresAnuales: valoresNumericos,
       proyectoId: proyectoId,
       itemFlujoBaseId: selectedItemInfo?.itemId,
-      categoriaId: selectedItemInfo?.categoriaId,
+      categoriaId: data.categoriaId,
     };
 
     onCrearFlujo(flujoCompleto);
@@ -166,6 +167,7 @@ export function CreateFlowDialog({
       descripcion: "",
       tipoFlujo: tipoFlujo,
       valoresAnuales: Array(horizonteAnalisis).fill({ value: 0 }),
+      categoriaId: "",
     });
     setSelectedItemInfo(null);
     setOpen(false);
@@ -260,6 +262,32 @@ export function CreateFlowDialog({
           <TabsContent value="personalizado">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
               <div className="space-y-2">
+                <Label className="text-custom-purple" htmlFor="categoriaId">
+                  Categoría
+                </Label>
+                <Select
+                  onValueChange={(value) => setValue("categoriaId", value)}
+                  defaultValue={form.watch("categoriaId")}
+                >
+                  <SelectTrigger id="categoriaId">
+                    <SelectValue placeholder="Selecciona una categoría..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categorias.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.categoriaId && (
+                  <p className="text-sm text-red-500">
+                    {errors.categoriaId.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label className="text-custom-purple" htmlFor="nombre">
                   Nombre del Flujo
                 </Label>
@@ -312,15 +340,20 @@ export function CreateFlowDialog({
                     </SelectContent>
                   </Select>
                   {errors.tipoFlujo && (
-                    <p className="text-sm text-red-500">{errors.tipoFlujo.message}</p>
+                    <p className="text-sm text-red-500">
+                      {errors.tipoFlujo.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-custom-purple" htmlFor="comportamiento">
+                  <Label
+                    className="text-custom-purple"
+                    htmlFor="comportamiento"
+                  >
                     Comportamiento
                   </Label>
                   <Select
-                     value={form.watch("comportamiento")}
+                    value={form.watch("comportamiento")}
                     onValueChange={(value) =>
                       setValue("comportamiento", value as "FIJO" | "VARIABLE")
                     }
@@ -334,7 +367,9 @@ export function CreateFlowDialog({
                     </SelectContent>
                   </Select>
                   {errors.comportamiento && (
-                    <p className="text-sm text-red-500">{errors.comportamiento.message}</p>
+                    <p className="text-sm text-red-500">
+                      {errors.comportamiento.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -359,7 +394,9 @@ export function CreateFlowDialog({
                     </SelectContent>
                   </Select>
                   {errors.tipo && (
-                    <p className="text-sm text-red-500">{errors.tipo.message}</p>
+                    <p className="text-sm text-red-500">
+                      {errors.tipo.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -368,7 +405,6 @@ export function CreateFlowDialog({
                   </Label>
                   <Select
                     value={form.watch("naturaleza")}
-                    onValuecha
                     onValueChange={(value) =>
                       setValue("naturaleza", value as "TANGIBLE" | "INTANGIBLE")
                     }
@@ -382,7 +418,9 @@ export function CreateFlowDialog({
                     </SelectContent>
                   </Select>
                   {errors.naturaleza && (
-                    <p className="text-sm text-red-500">{errors.naturaleza.message}</p>
+                    <p className="text-sm text-red-500">
+                      {errors.naturaleza.message}
+                    </p>
                   )}
                 </div>
               </div>

@@ -89,6 +89,14 @@ export const loginUser = (
     body: JSON.stringify({ email, password }),
   });
 
+export const registerUser = (
+  userData: any
+): Promise<AuthResponse> =>
+  fetcher(`${API_URL}/auth/register`, {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+
 // --- PROYECTOS ---
 export const getProyectos = (): Promise<Proyecto[]> =>
   fetcher(`${API_URL}/proyectos`);
