@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Library, Loader2 } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import {
   CrearFlujoFinancieroDto,
   CategoriaFlujo,

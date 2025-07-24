@@ -57,7 +57,8 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
     INTANGIBLE: "#ff8042",
     FIJO: "#0088FE",
     VARIABLE: "#00C49F",
-    // Nuevos colores para gradientes y barras
+    INGRESO: "#22c55e",
+    EGRESO: "#ef4444",
     POSITIVE_START: "#fac9b8",
     POSITIVE_END: "#db8a74",
     NEGATIVE_START: "#444054",
@@ -109,6 +110,21 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
         return acc;
       }, {} as Record<string, number>)
     ).map(([name, value]) => ({ name, value }));
+  }, [flujoData]);
+
+  const dataIngresosVsEgresos = useMemo(() => {
+    if (!flujoData) return [];
+    const totalIngresos = flujoData
+      .filter((f) => f.tipoFlujo === "INGRESO")
+      .reduce((acc, f) => acc + f.total, 0);
+    const totalEgresos = flujoData
+      .filter((f) => f.tipoFlujo === "EGRESO")
+      .reduce((acc, f) => acc + f.total, 0);
+
+    return [
+      { name: "Ingresos", total: totalIngresos },
+      { name: "Egresos", total: totalEgresos },
+    ];
   }, [flujoData]);
 
   return (
@@ -189,6 +205,34 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
                 strokeWidth={2}
               />
             </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Gráfico de Barras para Ingresos vs. Egresos */}
+      <Card className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-custom-silver/30">
+        <CardHeader>
+          <CardTitle>Ingresos vs. Egresos Totales</CardTitle>
+          <CardDescription>
+            Comparación del total de ingresos y egresos del proyecto
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={dataIngresosVsEgresos}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis tickFormatter={(value) => formatCurrency(value)} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Bar dataKey="total">
+                {dataIngresosVsEgresos.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.name === "Ingresos" ? COLORS.INGRESO : COLORS.EGRESO}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
@@ -284,3 +328,4 @@ const ChartsCards = ({ analysis, project }: ChartsCardsProps) => {
   );
 };
 export default ChartsCards;
+
