@@ -6,16 +6,8 @@ import {
   CrearProyectoDto,
   CrearFlujoFinancieroDto,
   Analisis,
+  User,
 } from "./types";
-
-interface User {
-  id: string;
-  nombres: string;
-  apellidos: string;
-  isActive: boolean;
-  email: string;
-  roles: string[];
-}
 
 interface AuthResponse {
   user: User;
@@ -28,8 +20,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // NUEVO: Función centralizada para manejar la autenticación y los errores con fetch
 async function customFetch(url: string, options?: RequestInit) {
-  // 1. Obtener el token del localStorage
-  const token = localStorage.getItem("token");
+  let token = null;
+  // 1. Obtener el token del localStorage solo si estamos en el cliente
+  if (typeof window !== "undefined") {
+    token = localStorage.getItem("token");
+  }
 
   // 2. Preparar los headers
   const headers: Record<string, string> = {
@@ -47,7 +42,7 @@ async function customFetch(url: string, options?: RequestInit) {
   // 5. Manejar errores, especialmente el 401
   if (!response.ok) {
     // Si el token expiró o es inválido, el backend devolverá 401
-    if (response.status === 401) {
+    if (response.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("token"); // Limpiar el token viejo
       window.location.href = "/login"; // Redirigir al login
     }

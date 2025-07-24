@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { useAuth } from "@/context/AuthProvider"; // Ajusta la ruta
+import { useAuth } from "@/context/AuthContext"; // Ajusta la ruta
 
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/api-client";

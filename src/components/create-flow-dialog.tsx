@@ -27,53 +27,59 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Library, Loader2 } from "lucide-react";
 import {
-  CrearCostoDto,
-  CategoriaCosto,
-  ItemCostoBase,
-  TipoCosto,
+  CrearFlujoFinancieroDto,
+  CategoriaFlujo,
+  ItemFlujoBase,
 } from "@/lib/types";
-import { getCategoriasCosto, getItemsCostoBase } from "@/lib/api-client";
+import { getCategoriasFlujo, getItemsFlujoBase } from "@/lib/api-client";
 
-// Corregido: Los costos deben ser números positivos o cero.
-const createCostSchema = z.object({
+const createFlowSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
   descripcion: z.string().min(1, "La descripción es requerida"),
-  tipo: z.enum(["FIJO", "VARIABLE"]),
+  tipoFlujo: z.enum(["INGRESO", "EGRESO"]),
+  comportamiento: z.enum(["FIJO", "VARIABLE"]),
+  tipo: z.enum(["DIRECTO", "INDIRECTO"]),
+  naturaleza: z.enum(["TANGIBLE", "INTANGIBLE"]),
   valoresAnuales: z.array(
     z.object({
-      value: z.number().max(0, "El valor no puede ser negativo"),
+      value: z.number(),
     })
   ),
 });
 
-type CostFormData = z.infer<typeof createCostSchema>;
+type FlowFormData = z.infer<typeof createFlowSchema>;
 
-interface CreateCostDialogProps {
-  onCrearCosto: (costo: CrearCostoDto) => void;
+interface CreateFlowDialogProps {
+  onCrearFlujo: (flujo: CrearFlujoFinancieroDto) => void;
   horizonteAnalisis: number;
   proyectoId: string;
+  tipoFlujo: "INGRESO" | "EGRESO";
 }
 
-export function CreateCostDialog({
-  onCrearCosto,
+export function CreateFlowDialog({
+  onCrearFlujo,
   horizonteAnalisis,
   proyectoId,
-}: CreateCostDialogProps) {
+  tipoFlujo,
+}: CreateFlowDialogProps) {
   const [open, setOpen] = useState(false);
   const [viewMode, setViewMode] = useState("biblioteca");
 
-  // Estado para la biblioteca
-  const [categorias, setCategorias] = useState<CategoriaCosto[]>([]);
-  const [items, setItems] = useState<ItemCostoBase[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaFlujo[]>([]);
+  const [items, setItems] = useState<ItemFlujoBase[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedItemInfo, setSelectedItemInfo] = useState<{
+    itemId: string;
+    categoriaId: string;
+  } | null>(null);
 
-  const form = useForm<CostFormData>({
-    resolver: zodResolver(createCostSchema),
+  const form = useForm<FlowFormData>({
+    resolver: zodResolver(createFlowSchema),
     defaultValues: {
       nombre: "",
       descripcion: "",
-      tipo: undefined,
+      tipoFlujo: tipoFlujo,
       valoresAnuales: Array(horizonteAnalisis).fill({ value: 0 }),
     },
   });
@@ -92,13 +98,12 @@ export function CreateCostDialog({
     name: "valoresAnuales",
   });
 
-  // Cargar categorías cuando se abre el diálogo
   useEffect(() => {
     if (open) {
       const fetchCategorias = async () => {
         setIsLoading(true);
         try {
-          const data = await getCategoriasCosto();
+          const data = await getCategoriasFlujo();
           setCategorias(data);
         } catch (error) {
           console.error("Error al cargar categorías:", error);
@@ -109,13 +114,12 @@ export function CreateCostDialog({
     }
   }, [open]);
 
-  // Cargar ítems cuando se selecciona una categoría
   useEffect(() => {
     if (selectedCategoria) {
       const fetchItems = async () => {
         setIsLoading(true);
         try {
-          const data = await getItemsCostoBase(selectedCategoria);
+          const data = await getItemsFlujoBase(selectedCategoria);
           setItems(data);
         } catch (error) {
           console.error("Error al cargar ítems de la biblioteca:", error);
@@ -126,39 +130,46 @@ export function CreateCostDialog({
     }
   }, [selectedCategoria]);
 
-  const handleSelectFromLibrary = (item: ItemCostoBase) => {
+  const handleSelectFromLibrary = (item: ItemFlujoBase) => {
     const newValoresAnuales = Array(horizonteAnalisis).fill({ value: 0 });
-    // Asumimos que el monto sugerido aplica al primer año (Año 0)
     if (horizonteAnalisis > 0) {
-      newValoresAnuales[0] = { value: -item.montoSugerido };
+      newValoresAnuales[0] = { value: item.montoSugerido };
     }
+
+    setSelectedItemInfo({ itemId: item.id, categoriaId: selectedCategoria });
 
     reset({
       nombre: item.nombre,
       descripcion: item.descripcion || "",
+      tipoFlujo: item.tipoFlujo,
+      comportamiento: item.comportamiento,
       tipo: item.tipo,
+      naturaleza: item.naturaleza,
       valoresAnuales: newValoresAnuales,
     });
     setViewMode("personalizado");
   };
 
-  const onSubmit = async (data: CostFormData) => {
+  const onSubmit = async (data: FlowFormData) => {
     const valoresNumericos = data.valoresAnuales.map((item) => item.value);
-    const costoCompleto: CrearCostoDto = {
+    const flujoCompleto: CrearFlujoFinancieroDto = {
       ...data,
       valoresAnuales: valoresNumericos,
       proyectoId: proyectoId,
+      itemFlujoBaseId: selectedItemInfo?.itemId,
+      categoriaId: selectedItemInfo?.categoriaId,
     };
 
-    onCrearCosto(costoCompleto);
+    onCrearFlujo(flujoCompleto);
     reset({
       nombre: "",
       descripcion: "",
-      tipo: undefined,
+      tipoFlujo: tipoFlujo,
       valoresAnuales: Array(horizonteAnalisis).fill({ value: 0 }),
     });
+    setSelectedItemInfo(null);
     setOpen(false);
-    setViewMode("biblioteca"); // Reset view for next time
+    setViewMode("biblioteca");
   };
 
   return (
@@ -169,16 +180,16 @@ export function CreateCostDialog({
           className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors hover:cursor-pointer"
         >
           <Plus size={16} />
-          Añadir Costo
+          Añadir {tipoFlujo === "INGRESO" ? "Ingreso" : "Egreso"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-custom-purple">
-            Añadir Nuevo Costo
+            Añadir Nuevo {tipoFlujo === "INGRESO" ? "Ingreso" : "Egreso"}
           </DialogTitle>
           <DialogDescription className="text-custom-violet">
-            Selecciona un costo de la biblioteca o créalo manualmente.
+            Selecciona un item de la biblioteca o créalo manualmente.
           </DialogDescription>
         </DialogHeader>
 
@@ -188,11 +199,10 @@ export function CreateCostDialog({
             <TabsTrigger value="personalizado">Personalizado</TabsTrigger>
           </TabsList>
 
-          {/* Pestaña de Biblioteca */}
           <TabsContent value="biblioteca" className="space-y-4 py-4">
             <div className="space-y-2">
               <Label className="text-custom-purple" htmlFor="categoria">
-                Categoría de Costo
+                Categoría de Flujo
               </Label>
               <Select onValueChange={setSelectedCategoria}>
                 <SelectTrigger id="categoria">
@@ -247,16 +257,15 @@ export function CreateCostDialog({
             </div>
           </TabsContent>
 
-          {/* Pestaña de Formulario Personalizado */}
           <TabsContent value="personalizado">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label className="text-custom-purple" htmlFor="nombre">
-                  Nombre del Costo
+                  Nombre del Flujo
                 </Label>
                 <Input
                   id="nombre"
-                  placeholder="Ej: Inversión inicial en equipos"
+                  placeholder="Ej: Ingreso por ventas"
                   {...register("nombre")}
                 />
                 {errors.nombre && (
@@ -272,7 +281,7 @@ export function CreateCostDialog({
                 </Label>
                 <Textarea
                   id="descripcion"
-                  placeholder="Describe el concepto del costo..."
+                  placeholder="Describe el flujo..."
                   rows={2}
                   {...register("descripcion")}
                 />
@@ -283,27 +292,99 @@ export function CreateCostDialog({
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-custom-purple" htmlFor="tipo">
-                  Tipo de Costo
-                </Label>
-                <Select
-                  value={form.watch("tipo")}
-                  onValueChange={(value) =>
-                    setValue("tipo", value as "FIJO" | "VARIABLE")
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona el tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="FIJO">Costo Fijo</SelectItem>
-                    <SelectItem value="VARIABLE">Costo Variable</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.tipo && (
-                  <p className="text-sm text-red-500">{errors.tipo.message}</p>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-custom-purple" htmlFor="tipoFlujo">
+                    Tipo de Flujo
+                  </Label>
+                  <Select
+                    value={form.watch("tipoFlujo")}
+                    onValueChange={(value) =>
+                      setValue("tipoFlujo", value as "INGRESO" | "EGRESO")
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="INGRESO">Ingreso</SelectItem>
+                      <SelectItem value="EGRESO">Egreso</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.tipoFlujo && (
+                    <p className="text-sm text-red-500">{errors.tipoFlujo.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-custom-purple" htmlFor="comportamiento">
+                    Comportamiento
+                  </Label>
+                  <Select
+                     value={form.watch("comportamiento")}
+                    onValueChange={(value) =>
+                      setValue("comportamiento", value as "FIJO" | "VARIABLE")
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el comportamiento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="FIJO">Fijo</SelectItem>
+                      <SelectItem value="VARIABLE">Variable</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.comportamiento && (
+                    <p className="text-sm text-red-500">{errors.comportamiento.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-custom-purple" htmlFor="tipo">
+                    Tipo
+                  </Label>
+                  <Select
+                    value={form.watch("tipo")}
+                    onValueChange={(value) =>
+                      setValue("tipo", value as "DIRECTO" | "INDIRECTO")
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DIRECTO">Directo</SelectItem>
+                      <SelectItem value="INDIRECTO">Indirecto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.tipo && (
+                    <p className="text-sm text-red-500">{errors.tipo.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-custom-purple" htmlFor="naturaleza">
+                    Naturaleza
+                  </Label>
+                  <Select
+                    value={form.watch("naturaleza")}
+                    onValuecha
+                    onValueChange={(value) =>
+                      setValue("naturaleza", value as "TANGIBLE" | "INTANGIBLE")
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona la naturaleza" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TANGIBLE">Tangible</SelectItem>
+                      <SelectItem value="INTANGIBLE">Intangible</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.naturaleza && (
+                    <p className="text-sm text-red-500">{errors.naturaleza.message}</p>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -349,7 +430,7 @@ export function CreateCostDialog({
                   type="submit"
                   className="flex-1 px-6 py-3 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105  bg-gradient-secondary hover:cursor-pointer"
                 >
-                  Añadir Costo
+                  Añadir Flujo
                 </Button>
               </DialogFooter>
             </form>

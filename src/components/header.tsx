@@ -2,7 +2,7 @@
 
 import React from "react";
 import { BarChart3, User, Settings, Bell } from "lucide-react";
-import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 const Header: React.FC = () => {

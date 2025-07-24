@@ -41,7 +41,7 @@ export interface ItemFlujoBase {
   nombre: string;
   descripcion: string;
   montoSugerido: number;
-  tipo: "Directo" | "Indirecto";
+  tipo: "DIRECTO" | "INDIRECTO";
   frecuencia: "UNICO" | "ANUAL" | "MENSUAL";
   naturaleza: "TANGIBLE" | "INTANGIBLE";
   tipoFlujo: "INGRESO" | "EGRESO";
@@ -64,14 +64,14 @@ export type CrearProyectoDto = Omit<Proyecto, "id" | "flujos" | "user">;
 export interface CrearFlujoFinancieroDto {
   proyectoId: string;
   descripcion: string;
-  itemFlujoBaseId: string;
-  categoriaId: string;
   nombre: string;
   tipoFlujo: "INGRESO" | "EGRESO";
   comportamiento: "FIJO" | "VARIABLE";
   tipo: "DIRECTO" | "INDIRECTO";
   naturaleza: "TANGIBLE" | "INTANGIBLE";
   valoresAnuales: number[];
+  itemFlujoBaseId?: string;
+  categoriaId?: string;
 }
 
 export type CrearCategoriaFlujoDto = Omit<

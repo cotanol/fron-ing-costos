@@ -1,13 +1,19 @@
 import { AnalysisClient } from "@/components/analysis-client";
-import { getProyectoPorId } from "@/lib/api-client";
+import { Metadata } from "next";
 
-type Params = Promise<{ id: string }>;
+type PageProps = {
+  params: { id: string };
+};
 
-export default async function AnalysisPage({ params }: { params: Params }) {
-  const { id } = await params;
-  const projectId = id;
+export async function generateMetadata({
+  params: _params,
+}: PageProps): Promise<Metadata> {
+  return {
+    title: `Análisis del Proyecto | Analisis Financiero`,
+    description: "Análisis financiero detallado de un proyecto.",
+  };
+}
 
-  const proyecto = await getProyectoPorId(projectId);
-
-  return <AnalysisClient proyecto={proyecto} />;
+export default function AnalysisPage({ params }: PageProps) {
+  return <AnalysisClient projectId={params.id} />;
 }
