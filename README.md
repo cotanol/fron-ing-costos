@@ -5,6 +5,11 @@
 # Analizador Financiero Front
 
 1. Clonar el proyecto
+
+```
+git clone https://github.com/cotanol/fron-ing-costos.git
+```
+
 2. `npm install`
 
 3. Clonar el archivo `.env.template` y renombrarlo a `.env.local`

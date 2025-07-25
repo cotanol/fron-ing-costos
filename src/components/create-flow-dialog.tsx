@@ -135,11 +135,46 @@ export function CreateFlowDialog({
 
   const handleSelectItem = (item: ItemFlujoBase) => {
     setSelectedItem(item);
-    const newValoresAnuales = Array(horizonteAnalisis).fill({ value: 0 });
-    if (horizonteAnalisis > 0) {
-      newValoresAnuales[0] = { value: item.montoSugerido };
-    }
 
+    // --- INICIO DE LA LÓGICA CORREGIDA ---
+
+    // 1. Crea un arreglo de la longitud correcta, lleno de ceros.
+    const valores = new Array(horizonteAnalisis).fill(0);
+    const montoSugerido = item.montoSugerido;
+
+    // 2. Usa un switch para distribuir el monto según la frecuencia de la plantilla.
+    switch (item.frecuencia) {
+      case "UNICO":
+        // El monto se aplica solo en el Año 0 (inversión inicial).
+        if (valores.length > 0) {
+          valores[0] = montoSugerido;
+        }
+        break;
+
+      case "ANUAL":
+        // El monto se aplica cada año, usualmente a partir del Año 1.
+        for (let i = 1; i < valores.length; i++) {
+          valores[i] = montoSugerido;
+        }
+        break;
+
+      case "MENSUAL":
+        // El monto mensual se multiplica por 12 y se aplica cada año, a partir del Año 1.
+        for (let i = 1; i < valores.length; i++) {
+          valores[i] = montoSugerido * 12;
+        }
+        break;
+
+      default:
+        // Si la frecuencia no es reconocida, no hace nada y los valores quedan en cero.
+        break;
+    }
+    // 3. Convierte el arreglo de números a la estructura que usa 'react-hook-form'.
+    const newValoresAnuales = valores.map((v) => ({ value: v }));
+
+    // --- FIN DE LA LÓGICA CORREGIDA ---
+
+    // 4. Actualiza (resetea) el formulario con todos los datos correctos.
     reset({
       nombre: item.nombre,
       descripcion: item.descripcion || "",
@@ -147,25 +182,38 @@ export function CreateFlowDialog({
       comportamiento: item.comportamiento,
       tipo: item.tipo,
       naturaleza: item.naturaleza,
-      valoresAnuales: newValoresAnuales,
+      valoresAnuales: newValoresAnuales, // <-- Usa el arreglo correctamente calculado
       categoriaId: selectedCategoria,
       itemFlujoBaseId: item.id,
     });
   };
 
   const onSubmit = async (data: FlowFormData) => {
-    console.log("Datos del formulario al enviar:", data);
-
+    // 1. Extrae los valores numéricos del arreglo de objetos
     const valoresNumericos = data.valoresAnuales.map((item) => item.value);
 
+    // --- INICIO DE LA LÓGICA CORREGIDA ---
+
+    // 2. Construye el DTO manualmente para asegurar que la estructura sea 100% correcta
     const flujoCompleto: CrearFlujoFinancieroDto = {
-      ...data,
-      valoresAnuales: valoresNumericos,
-      proyectoId: proyectoId,
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      tipoFlujo: data.tipoFlujo,
+      comportamiento: data.comportamiento,
+      tipo: data.tipo,
+      naturaleza: data.naturaleza,
+      valoresAnuales: valoresNumericos, // <-- El arreglo de números ya transformado
+      proyectoId: proyectoId, // <-- El ID del proyecto que viene de las props
+      categoriaId: data.categoriaId, // <-- El ID de la categoría del formulario
+      itemFlujoBaseId: data.itemFlujoBaseId, // <-- El ID del item base del formulario
     };
 
+    // --- FIN DE LA LÓGICA CORREGIDA ---
+
+    // 3. Llama a la función del padre para enviar los datos a la API
     onCrearFlujo(flujoCompleto);
 
+    // 4. Resetea el formulario y cierra el diálogo
     reset({
       nombre: "",
       descripcion: "",

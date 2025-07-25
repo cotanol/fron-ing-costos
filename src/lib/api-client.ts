@@ -18,38 +18,38 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // HELPERS
 
-// NUEVO: Función centralizada para manejar la autenticación y los errores con fetch
 async function customFetch(url: string, options?: RequestInit) {
   let token = null;
-  // 1. Obtener el token del localStorage solo si estamos en el cliente
   if (typeof window !== "undefined") {
     token = localStorage.getItem("token");
   }
 
-  // 2. Preparar los headers
   const headers: Record<string, string> = {
-    "Content-Type": "application/json", // Header por defecto
-    ...(options?.headers as Record<string, string>), // Headers que vengan de la llamada original
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string>),
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`; // 3. Añadir el token si existe
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // 4. Realizar la petición con los headers actualizados
   const response = await fetch(url, { ...options, headers });
 
-  // 5. Manejar errores, especialmente el 401
   if (!response.ok) {
-    // Si el token expiró o es inválido, el backend devolverá 401
     if (response.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("token"); // Limpiar el token viejo
-      window.location.href = "/login"; // Redirigir al login
+      localStorage.removeItem("token");
+      window.location.href = "/login";
     }
 
     const error = new Error("An error occurred while fetching the data.");
     try {
-      (error as any).info = await response.json();
+      const errorInfo = await response.json();
+      (error as any).info = errorInfo;
+
+      // --- LÍNEA AÑADIDA ---
+      // Imprime el detalle del error del backend en la consola para depuración
+      console.error("--- DETALLE DEL ERROR DEL BACKEND ---", errorInfo);
+      // ---------------------
     } catch (e) {
       (error as any).info = { message: "Error reading response body." };
     }
@@ -89,9 +89,7 @@ export const loginUser = (
     body: JSON.stringify({ email, password }),
   });
 
-export const registerUser = (
-  userData: any
-): Promise<AuthResponse> =>
+export const registerUser = (userData: any): Promise<AuthResponse> =>
   fetcher(`${API_URL}/auth/register`, {
     method: "POST",
     body: JSON.stringify(userData),
