@@ -1,19 +1,21 @@
+"use client";
+
 import { AnalysisClient } from "@/components/analysis-client";
-import { Metadata } from "next";
+import PrivateRoute from "@/components/protected-routes/private-route";
+import { useParams } from "next/navigation";
 
-type PageProps = {
-  params: { id: string };
-};
+export default function AnalysisPage() {
+  const params = useParams();
 
-export async function generateMetadata({
-  params: _params,
-}: PageProps): Promise<Metadata> {
-  return {
-    title: `Análisis del Proyecto | Analisis Financiero`,
-    description: "Análisis financiero detallado de un proyecto.",
-  };
-}
+  const projectId = Array.isArray(params.id) ? params.id[0] : params.id;
 
-export default function AnalysisPage({ params }: PageProps) {
-  return <AnalysisClient projectId={params.id} />;
+  if (!projectId) {
+    return <div>Cargando proyecto...</div>;
+  }
+
+  return (
+    <PrivateRoute>
+      <AnalysisClient projectId={projectId} />
+    </PrivateRoute>
+  );
 }

@@ -25,35 +25,23 @@ const Footer: React.FC = () => {
               recuperación con precisión y elegancia.
             </p>
             <div className="flex gap-3">
-              <a
-                href="#"
-                className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors"
-              >
+              <a className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors">
                 <Github size={20} />
               </a>
-              <a
-                href="#"
-                className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors"
-              >
+              <a className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors">
                 <Twitter size={20} />
               </a>
-              <a
-                href="#"
-                className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors"
-              >
+              <a className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors">
                 <Linkedin size={20} />
               </a>
-              <a
-                href="#"
-                className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors"
-              >
+              <a className="bg-white/20 p-2 rounded-lg hover:bg-white/30 transition-colors">
                 <Mail size={20} />
               </a>
             </div>
           </div>
 
           {/* Enlaces Rápidos */}
-          <div>
+          {/* <div>
             <h4 className="font-semibold mb-4">Enlaces Rápidos</h4>
             <ul className="space-y-2 text-custom-dogwood">
               <li>
@@ -77,10 +65,10 @@ const Footer: React.FC = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Soporte */}
-          <div>
+          {/* <div>
             <h4 className="font-semibold mb-4">Soporte</h4>
             <ul className="space-y-2 text-custom-dogwood">
               <li>
@@ -104,7 +92,7 @@ const Footer: React.FC = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         <div className="border-t border-white/20 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
@@ -115,28 +103,16 @@ const Footer: React.FC = () => {
             Villafuerte el mejor profe :D
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a
-              href="#"
-              className="text-custom-dogwood hover:text-white text-sm transition-colors"
-            >
+            <a className="text-custom-dogwood hover:text-white text-sm transition-colors">
               Zamora Rodriguez Enzo
             </a>
-            <a
-              href="#"
-              className="text-custom-dogwood hover:text-white text-sm transition-colors"
-            >
+            <a className="text-custom-dogwood hover:text-white text-sm transition-colors">
               Salcedo Morales Francisco Jose
             </a>
-            <a
-              href="#"
-              className="text-custom-dogwood hover:text-white text-sm transition-colors"
-            >
+            <a className="text-custom-dogwood hover:text-white text-sm transition-colors">
               Rivera Tuesta Alvaro Daniel
             </a>
-            <a
-              href="#"
-              className="text-custom-dogwood hover:text-white text-sm transition-colors"
-            >
+            <a className="text-custom-dogwood hover:text-white text-sm transition-colors">
               Muñoz Guillen Heidy
             </a>
           </div>

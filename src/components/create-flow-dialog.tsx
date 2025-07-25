@@ -149,28 +149,23 @@ export function CreateFlowDialog({
       naturaleza: item.naturaleza,
       valoresAnuales: newValoresAnuales,
       categoriaId: selectedCategoria,
-      itemFlujoBaseId: item.id, // Asegurar que el ID del ítem se establece aquí
+      itemFlujoBaseId: item.id,
     });
   };
 
   const onSubmit = async (data: FlowFormData) => {
-    // El 'data' de react-hook-form ya tiene todo lo que necesitas
-    // porque lo estableciste con reset() y setValue().
-
-    // Puedes agregar un console.log para verificarlo:
     console.log("Datos del formulario al enviar:", data);
 
     const valoresNumericos = data.valoresAnuales.map((item) => item.value);
 
     const flujoCompleto: CrearFlujoFinancieroDto = {
-      ...data, // 'data' ya incluye nombre, descripcion, categoriaId, itemFlujoBaseId, etc.
+      ...data,
       valoresAnuales: valoresNumericos,
       proyectoId: proyectoId,
     };
 
     onCrearFlujo(flujoCompleto);
 
-    // El resto del reset y cierre del diálogo está bien.
     reset({
       nombre: "",
       descripcion: "",

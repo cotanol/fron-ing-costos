@@ -1,71 +1,167 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import { useAuth } from "@/context/AuthContext"; // Ajusta la ruta
-
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { loginUser } from "@/lib/api-client";
+import Image from "next/image";
+
+// Componentes de UI
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Mail, Lock } from "lucide-react";
+import PublicRoute from "@/components/protected-routes/public-route";
+
+// 1. Definir el schema de validación con Zod
+const loginSchema = z.object({
+  email: z.string().email({ message: "Por favor, ingresa un email válido." }),
+  password: z
+    .string()
+    .min(1, { message: "La contraseña no puede estar vacía." }),
+});
+
+// 2. Crear el tipo de dato del formulario a partir del schema
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
   const { login } = useAuth();
   const router = useRouter();
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // Estados para el formulario
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // 3. Inicializar useForm con el resolver de Zod
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  // Manejar el envío del formulario
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
+  // 4. La función onSubmit ahora recibe los datos validados
+  const onSubmit = async (data: LoginFormData) => {
+    setApiError(null);
     try {
-      const data = await loginUser(email, password);
-      login(data.user, data.token);
-      router.push("/");
+      const response = await loginUser(data.email, data.password);
+      login(response.user, response.token);
+      window.location.href = "/";
     } catch (err: any) {
-      setError(err.info?.message || "Credenciales incorrectas.");
+      setApiError(err.info?.message || "Email o contraseña incorrectos.");
     }
   };
 
   return (
-    <div>
-      <h1>Página de Login</h1>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <br />
-          <input
-            id="email"
-            type="email"
-            value={email}
-            placeholder="Ingresa tu email"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <br />
-        <div>
-          <label htmlFor="password">Contraseña</label>
-          <br />
-          <input
-            id="password"
-            type="password"
-            value={password}
-            placeholder="Ingresa tu contraseña"
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <br />
+    <PublicRoute>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/logo_unfv.jpg"
+                alt="Logo de la UNFV"
+                width={400} // Ajusta el ancho según el tamaño de tu logo
+                height={60} // Ajusta el alto según el tamaño de tu logo
+                priority // Añade 'priority' si el logo es importante y debe cargar rápido
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold text-foreground">
+              Iniciar Sesión
+            </CardTitle>
+            <CardDescription>
+              Ingresa tus credenciales para acceder al sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* 5. El form ahora usa handleSubmit de react-hook-form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Campo de Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="ejemplo@correo.com"
+                    className="pl-10"
+                    {...register("email")} // Se registra el campo
+                    disabled={isSubmitting}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-sm font-medium text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-        {/* Muestra el mensaje de error si existe */}
-        {error && <p>{error}</p>}
+              {/* Campo de Contraseña */}
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Ingresa tu contraseña"
+                    className="pl-10"
+                    {...register("password")} // Se registra el campo
+                    disabled={isSubmitting}
+                  />
+                </div>
+                {errors.password && (
+                  <p className="text-sm font-medium text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
-        <button type="submit">Iniciar Sesión</button>
-      </form>
-    </div>
+              {/* Mensaje de Error de API */}
+              {apiError && (
+                <p className="text-sm font-medium text-destructive">
+                  {apiError}
+                </p>
+              )}
+
+              {/* Botón de Submit */}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Iniciando sesión...
+                  </>
+                ) : (
+                  "Iniciar Sesión"
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                ¿No tienes una cuenta?{" "}
+                <Link
+                  href="/register"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Regístrate aquí
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </PublicRoute>
   );
 };
 
