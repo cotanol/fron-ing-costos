@@ -99,6 +99,9 @@ export const registerUser = (userData: any): Promise<AuthResponse> =>
 export const getProyectos = (): Promise<Proyecto[]> =>
   fetcher(`${API_URL}/proyectos`);
 
+export const getProyectosByUser = (): Promise<Proyecto[]> =>
+  fetcher(`${API_URL}/proyectos/user`);
+
 export const getProyectoPorId = (id: string): Promise<Proyecto> =>
   fetcher(`${API_URL}/proyectos/${id}`);
 

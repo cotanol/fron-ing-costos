@@ -38,7 +38,10 @@ const registerSchema = z.object({
   email: z.string().email({ message: "Por favor, ingresa un email válido." }),
   password: z
     .string()
-    .min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
+    .min(6, { message: "La contraseña debe tener al menos 6 caracteres." })
+    .regex(/[A-Z]/, { message: "Debe contener al menos una letra mayúscula." })
+    .regex(/[a-z]/, { message: "Debe contener al menos una letra minúscula." })
+    .regex(/[0-9]/, { message: "Debe contener al menos un número." }),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -59,7 +62,7 @@ export default function RegisterPage() {
     setApiError(null);
     try {
       await registerUser(data);
-      // Opcional: mostrar un toast de éxito aquí
+      // TODO: mostrar un toast de éxito aquí
       router.push("/login");
     } catch (err: any) {
       setApiError(err.info?.message || "Ocurrió un error. Inténtalo de nuevo.");

@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
 import { ProjectCard } from "@/components/project-card";
 import {
-  getProyectos,
+  getProyectosByUser,
   crearProyecto,
   eliminarProyecto,
 } from "@/lib/api-client";
@@ -18,7 +18,7 @@ export default function Home() {
     error,
     isLoading,
     mutate,
-  } = useSWR("projects", getProyectos);
+  } = useSWR("projects", getProyectosByUser);
 
   const handleCrearProyecto = async (projectData: CrearProyectoDto) => {
     try {

@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://www.svgrepo.com/show/354113/nextjs-icon.svg" width="120" alt="Nest Logo" /></a>
+  <a href="https://nextjs.org/" target="blank"><img src="https://www.svgrepo.com/show/354113/nextjs-icon.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
 # Analizador Financiero Front
