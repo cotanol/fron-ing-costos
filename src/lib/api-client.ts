@@ -14,6 +14,25 @@ interface AuthResponse {
   token: string;
 }
 
+interface RegisterUserDto {
+  nombres: string;
+  apellidos: string;
+  email: string;
+  password: string;
+}
+
+class HttpError extends Error {
+  info: unknown;
+  status: number;
+
+  constructor(message: string, info: unknown, status: number) {
+    super(message);
+    this.name = "HttpError";
+    this.info = info;
+    this.status = status;
+  }
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // HELPERS
@@ -41,38 +60,39 @@ async function customFetch(url: string, options?: RequestInit) {
       window.location.href = "/login";
     }
 
-    const error = new Error("An error occurred while fetching the data.");
+    // Intenta obtener el detalle del error desde el backend
+    let errorInfo: unknown;
     try {
-      const errorInfo = await response.json();
-      (error as any).info = errorInfo;
-
-      // --- LÍNEA AÑADIDA ---
-      // Imprime el detalle del error del backend en la consola para depuración
+      errorInfo = await response.json();
       console.error("--- DETALLE DEL ERROR DEL BACKEND ---", errorInfo);
-      // ---------------------
-    } catch (e) {
-      (error as any).info = { message: "Error reading response body." };
+    } catch {
+      // Si falla, crea un objeto de información genérico
+      errorInfo = {
+        message: "Error: No se pudo leer el cuerpo de la respuesta.",
+      };
     }
-    (error as any).status = response.status;
-    throw error;
+
+    // Lanza el nuevo error estructurado y con tipos definidos
+    throw new HttpError(
+      "Ocurrió un error al obtener los datos.",
+      errorInfo,
+      response.status
+    );
   }
 
   return response;
 }
 
-// MODIFICADO: Tu fetcher ahora usa customFetch
 async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await customFetch(url, options);
-  // Si la petición es DELETE, puede que no haya un cuerpo JSON
+
   if (response.status === 204) {
     return null as T;
   }
   return response.json();
 }
 
-// MODIFICADO: Tu handleDelete ahora usa customFetch
-const handleDelete = async (url: string, entityName: string) => {
-  // Ya no necesitamos la lógica de fetch aquí, customFetch se encarga
+const handleDelete = async (url: string) => {
   await customFetch(url, { method: "DELETE" });
 };
 
@@ -89,7 +109,9 @@ export const loginUser = (
     body: JSON.stringify({ email, password }),
   });
 
-export const registerUser = (userData: any): Promise<AuthResponse> =>
+export const registerUser = (
+  userData: RegisterUserDto
+): Promise<AuthResponse> =>
   fetcher(`${API_URL}/auth/register`, {
     method: "POST",
     body: JSON.stringify(userData),
@@ -123,7 +145,7 @@ export const modificarProyecto = (
   });
 
 export const eliminarProyecto = (id: string): Promise<void> =>
-  handleDelete(`${API_URL}/proyectos/${id}`, "proyecto");
+  handleDelete(`${API_URL}/proyectos/${id}`);
 
 // --- COSTOS ---
 
@@ -151,7 +173,7 @@ export const modificarFlujoFinanciero = (
     body: JSON.stringify(flujo),
   });
 export const eliminarFlujoFinanciero = (id: string): Promise<void> =>
-  handleDelete(`${API_URL}/flujos-financieros/${id}`, "flujo financiero");
+  handleDelete(`${API_URL}/flujos-financieros/${id}`);
 
 // --- BIBLIOTECA DE COSTOS ---
 
@@ -170,7 +192,7 @@ export const getItemsFlujoBase = (
 
 // --- ANALISIS ---
 export const getAnalisis = async (projectId: string): Promise<Analisis> => {
-  const result = await fetcher<any>(`${API_URL}/analisis/${projectId}`);
+  const result = await fetcher<Analisis>(`${API_URL}/analisis/${projectId}`);
 
   return result;
 };

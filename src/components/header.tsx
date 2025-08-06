@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { BarChart3, User, Settings, Bell, LogOut } from "lucide-react";
+import { BarChart3, User, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 

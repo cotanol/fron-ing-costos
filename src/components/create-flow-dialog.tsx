@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Plus, Loader2 } from "lucide-react";
 import {
   CrearFlujoFinancieroDto,
@@ -71,9 +71,6 @@ export function CreateFlowDialog({
   const [items, setItems] = useState<ItemFlujoBase[]>([]);
   const [selectedCategoria, setSelectedCategoria] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedItemInfo, setSelectedItemInfo] = useState<{
-    itemId: string;
-  } | null>(null);
 
   const form = useForm<FlowFormData>({
     resolver: zodResolver(createFlowSchema),
@@ -136,8 +133,6 @@ export function CreateFlowDialog({
   const handleSelectItem = (item: ItemFlujoBase) => {
     setSelectedItem(item);
 
-    // --- INICIO DE LA LÓGICA CORREGIDA ---
-
     // 1. Crea un arreglo de la longitud correcta, lleno de ceros.
     const valores = new Array(horizonteAnalisis).fill(0);
     const montoSugerido = item.montoSugerido;
@@ -172,8 +167,6 @@ export function CreateFlowDialog({
     // 3. Convierte el arreglo de números a la estructura que usa 'react-hook-form'.
     const newValoresAnuales = valores.map((v) => ({ value: v }));
 
-    // --- FIN DE LA LÓGICA CORREGIDA ---
-
     // 4. Actualiza (resetea) el formulario con todos los datos correctos.
     reset({
       nombre: item.nombre,
@@ -192,8 +185,6 @@ export function CreateFlowDialog({
     // 1. Extrae los valores numéricos del arreglo de objetos
     const valoresNumericos = data.valoresAnuales.map((item) => item.value);
 
-    // --- INICIO DE LA LÓGICA CORREGIDA ---
-
     // 2. Construye el DTO manualmente para asegurar que la estructura sea 100% correcta
     const flujoCompleto: CrearFlujoFinancieroDto = {
       nombre: data.nombre,
@@ -207,8 +198,6 @@ export function CreateFlowDialog({
       categoriaId: data.categoriaId, // <-- El ID de la categoría del formulario
       itemFlujoBaseId: data.itemFlujoBaseId, // <-- El ID del item base del formulario
     };
-
-    // --- FIN DE LA LÓGICA CORREGIDA ---
 
     // 3. Llama a la función del padre para enviar los datos a la API
     onCrearFlujo(flujoCompleto);

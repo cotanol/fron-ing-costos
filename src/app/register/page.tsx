@@ -27,6 +27,12 @@ import { Loader2, Mail, Lock, User } from "lucide-react";
 import { registerUser } from "@/lib/api-client";
 import PublicRoute from "@/components/protected-routes/public-route";
 
+type ApiError = {
+  info?: {
+    message: string;
+  };
+};
+
 // Esquema de validación con Zod
 const registerSchema = z.object({
   nombres: z
@@ -64,8 +70,11 @@ export default function RegisterPage() {
       await registerUser(data);
       // TODO: mostrar un toast de éxito aquí
       router.push("/login");
-    } catch (err: any) {
-      setApiError(err.info?.message || "Ocurrió un error. Inténtalo de nuevo.");
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      setApiError(
+        error.info?.message || "Ocurrió un error. Inténtalo de nuevo."
+      );
     }
   };
 
@@ -78,9 +87,9 @@ export default function RegisterPage() {
               <Image
                 src="/logo_unfv.jpg"
                 alt="Logo de la UNFV"
-                width={400} // Ajusta el ancho según el tamaño de tu logo
-                height={60} // Ajusta el alto según el tamaño de tu logo
-                priority // Añade 'priority' si el logo es importante y debe cargar rápido
+                width={400}
+                height={60}
+                priority
               />
             </div>
             <CardTitle className="text-2xl font-bold text-foreground">

@@ -23,20 +23,18 @@ export default function Home() {
   const handleCrearProyecto = async (projectData: CrearProyectoDto) => {
     try {
       await crearProyecto(projectData);
-      mutate(); // Re-fetch the projects list
+      mutate();
     } catch (error) {
       console.error("Failed to create project:", error);
-      // Here you could show an error toast to the user
     }
   };
 
   const handleEliminarProyecto = async (id: string) => {
     try {
       await eliminarProyecto(id);
-      mutate(); // Re-fetch the projects list
+      mutate();
     } catch (error) {
       console.error("Failed to delete project:", error);
-      // Here you could show an error toast to the user
     }
   };
 

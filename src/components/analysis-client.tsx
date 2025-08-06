@@ -12,11 +12,7 @@ import {
   crearFlujoFinanciero,
   eliminarFlujoFinanciero,
 } from "@/lib/api-client";
-import {
-  CrearFlujoFinancieroDto,
-  FlujoFinanciero,
-  Proyecto,
-} from "@/lib/types";
+import { CrearFlujoFinancieroDto, FlujoFinanciero } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import KpisCards from "./analysis-cards/kpis-cards";
 import ChartsCards from "./analysis-cards/charts-cards";
@@ -27,7 +23,6 @@ interface AnalysisClientProps {
 }
 
 export function AnalysisClient({ projectId }: AnalysisClientProps) {
-  // Fetch project data and analysis results in parallel
   const {
     data: project,
     error: projectError,
@@ -90,7 +85,7 @@ export function AnalysisClient({ projectId }: AnalysisClientProps) {
   }
 
   const ingresos: FlujoFinanciero[] =
-    project.flujos?.filter((flujo) => flujo.tipoFlujo === "INGRESO") || []; // Añadimos "|| []" como fallback por si flujos no existe
+    project.flujos?.filter((flujo) => flujo.tipoFlujo === "INGRESO") || [];
 
   const egresos: FlujoFinanciero[] =
     project.flujos?.filter((flujo) => flujo.tipoFlujo === "EGRESO") || [];

@@ -8,9 +8,6 @@ import {
   useContext,
   ReactNode,
 } from "react";
-// MODIFICADO: Importamos la función específica que necesitamos
-
-// ... (Las definiciones de User, AuthStatus, AuthState, AuthContextType no cambian) ...
 
 interface User {
   id: string;
@@ -66,12 +63,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
 
     try {
-      // MODIFICADO: Usamos la nueva función en lugar de apiClient.get
       const data = await checkAuthStatus();
 
       localStorage.setItem("token", data.token);
       setAuthState({ status: "authenticated", user: data.user });
-    } catch (error) {
+    } catch {
       localStorage.removeItem("token");
       setAuthState({ status: "not-authenticated", user: null });
     }

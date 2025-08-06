@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { loginUser } from "@/lib/api-client";
 import Image from "next/image";
@@ -24,7 +24,12 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Mail, Lock } from "lucide-react";
 import PublicRoute from "@/components/protected-routes/public-route";
 
-// 1. Definir el schema de validación con Zod
+type ApiError = {
+  info?: {
+    message: string;
+  };
+};
+
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor, ingresa un email válido." }),
   password: z
@@ -32,15 +37,14 @@ const loginSchema = z.object({
     .min(1, { message: "La contraseña no puede estar vacía." }),
 });
 
-// 2. Crear el tipo de dato del formulario a partir del schema
+//  Crear el tipo de dato del formulario a partir del schema
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
   const { login } = useAuth();
-  const router = useRouter();
+
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // 3. Inicializar useForm con el resolver de Zod
   const {
     register,
     handleSubmit,
@@ -49,15 +53,15 @@ const LoginPage = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  // 4. La función onSubmit ahora recibe los datos validados
   const onSubmit = async (data: LoginFormData) => {
     setApiError(null);
     try {
       const response = await loginUser(data.email, data.password);
       login(response.user, response.token);
       window.location.href = "/";
-    } catch (err: any) {
-      setApiError(err.info?.message || "Email o contraseña incorrectos.");
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      setApiError(error.info?.message || "Email o contraseña incorrectos.");
     }
   };
 
@@ -70,9 +74,9 @@ const LoginPage = () => {
               <Image
                 src="/logo_unfv.jpg"
                 alt="Logo de la UNFV"
-                width={400} // Ajusta el ancho según el tamaño de tu logo
-                height={60} // Ajusta el alto según el tamaño de tu logo
-                priority // Añade 'priority' si el logo es importante y debe cargar rápido
+                width={400}
+                height={60}
+                priority
               />
             </div>
             <CardTitle className="text-2xl font-bold text-foreground">
@@ -83,7 +87,6 @@ const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* 5. El form ahora usa handleSubmit de react-hook-form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Campo de Email */}
               <div className="space-y-2">
